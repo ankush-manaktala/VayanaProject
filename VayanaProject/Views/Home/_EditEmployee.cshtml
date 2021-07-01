@@ -1,0 +1,50 @@
+﻿<div id="@("row_" + ViewBag.Id)">
+    <div class="row my-3">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label id="lblFirstName">First Name<sup>*</sup></label>
+                <input type="text" id="firstName" />
+                <p id="erorFirstName"></p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label id="lblMiddleName">Middle Name</label>
+                <input type="text" id="middleName" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label id="lblLastName">Last Name<sup>*</sup></label>
+                <input type="text" id="lastName" />
+                <p id="erorLastName"></p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label id="lblSalary">Salary<sup>*</sup></label>
+                <input type="text" id="salary" />
+                <p id="erorSalary"></p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label id="lblDept">Department<sup>*</sup></label>
+                <Select id="department">
+                    <option value="0" selected>Select Department</option>
+                    @if (ViewBag.Departments != null)
+                    {
+                        @foreach (var dept in (List<Department>)ViewBag.Departments)
+                        {
+                            <option value="@dept.DeptId">@dept.DeptName</option>
+                        }
+                    }
+                </Select>
+                <p id="erorDept"></p>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex">
+        <input id="btnUpdate" type="button" class="mr-4" value="Update" data-id="@ViewBag.Id" onclick="UpdateEmployee(this)" />
+    </div>
+</div>

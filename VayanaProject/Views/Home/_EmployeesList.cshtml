@@ -1,0 +1,70 @@
+﻿@model List<Employee>;
+
+<style>
+    tr.group,
+    tr.group:hover {
+        background-color: #ddd !important;
+    }
+</style>
+<div class="table-responsive">
+    <table id="dtDeptEmployye" class="w-100 table">
+        <thead>
+            <tr>
+                <th class="font-weight-bold">Employee Name</th>
+                <th class="font-weight-bold">Department</th>
+                <th class="font-weight-bold">Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emp in Model)
+            {
+                <tr>
+                    <td>@emp.EmpFirstName @(!string.IsNullOrEmpty(emp.EmpMiddleName) ?emp.EmpMiddleName:"") @emp.EmpLastName</td>
+                    <td>@emp.DeptName</td>
+                    <td>@emp.EmpSalary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var groupColumn = 1;
+        var table = $('#dtDeptEmployye').DataTable({
+            "paging": false,
+            "searching": false,
+            "columnDefs": [
+                { "visible": false, "targets": groupColumn }
+            ],
+            "order": [[groupColumn, 'asc']],
+            //"displayLength": 25,
+            "drawCallback": function (settings) {
+                var api = this.api();
+                var rows = api.rows({ page: 'current' }).nodes();
+                var last = null;
+
+                api.column(groupColumn, { page: 'current' }).data().each(function (group, i) {
+                    if (last !== group) {
+                        $(rows).eq(i).before(
+                            '<tr class="group"><td colspan="5">' + group + '</td></tr>'
+                        );
+
+                        last = group;
+                    }
+                });
+            }
+        });
+
+        // Order by the grouping
+        $('#dtDeptEmployye tbody').on('click', 'tr.group', function () {
+            var currentOrder = table.order()[0];
+            if (currentOrder[0] === groupColumn && currentOrder[1] === 'asc') {
+                table.order([groupColumn, 'desc']).draw();
+            }
+            else {
+                table.order([groupColumn, 'asc']).draw();
+            }
+        });
+    });
+</script>

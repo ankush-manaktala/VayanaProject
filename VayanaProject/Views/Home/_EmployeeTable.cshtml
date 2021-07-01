@@ -1,0 +1,83 @@
+﻿@model List<Employee>;
+<div class="table-responsive">
+    <table id="dtEmployee" class="w-100 table">
+        <thead>
+            <tr>
+                <th class="font-weight-bold">Employee Name</th>
+                <th class="font-weight-bold">Department</th>
+                <th class="font-weight-bold">Salary</th>
+                <th class="font-weight-bold">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emp in Model)
+                {
+                <tr id="@emp.EmpId">
+                    <td>@emp.EmpFirstName @(!string.IsNullOrEmpty(emp.EmpMiddleName) ?emp.EmpMiddleName:"") @emp.EmpLastName</td>
+                    <td>@emp.DeptName</td>
+                    <td>@emp.EmpSalary</td>
+                    <td>
+                        <a class="editEmployee" style="width:30px; height:30px;border:1px solid black;">Edit</a> &nbsp;
+                        <a onclick="DeleteEmployee(this)" data-id="@emp.EmpId" style="width:30px; height:30px;border:1px solid black;">Delete</a>
+                    </td>
+                </tr>
+                }
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+    var table;
+    $("document").ready(function () {
+        table =  $('#dtEmployee').DataTable({
+                    "paging": false,
+                    "searching": false
+                });
+    });
+
+    $('.editEmployee').on('click', function (e) {
+        var id = $(this).closest('tr').attr('id');
+        var tr = $(this).parents('tr');
+        var row = table.row(tr);
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+        }
+        else {
+            row.child(LoadEditEmployee(id)).show();
+            tr.addClass('shown');
+            LoadDataForEdit(id);
+        }
+    });
+
+    function LoadEditEmployee(id) {
+        var html = "";
+        $.ajax({
+            url: "/Home/LoadEditEmployee?EmpId="+ id,
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            async:false,
+            success: function (result) {
+                html = result;
+            },
+            error: function (error) {
+                alert(error);
+            },
+        });
+        return html;
+    }
+
+    function LoadDataForEdit(rowId) {
+        debugger;
+        var id = "row_" + rowId;
+        var data =@Html.Raw(Json.Serialize(@Model));
+        var employee = $.grep(data, function (e) { return e.empId == rowId })[0];
+        if (employee) {
+            $('#' + id).find('#firstName').val(employee.empFirstName);
+            $('#' + id).find('#middleName').val(employee.empMiddleName);
+            $('#' + id).find('#lastName').val(employee.empLastName);
+            $('#' + id).find('#salary').val(employee.empSalary);
+            $('#' + id).find('#department').val(employee.empDeptId);
+        }
+    }
+
+</script>
