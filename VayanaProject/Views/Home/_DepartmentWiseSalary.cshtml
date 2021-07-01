@@ -1,0 +1,20 @@
+﻿@model List<AvgSalaryModel>;
+<div class="table-responsive">
+    <table id="dtDept" class="w-100 table">
+        <thead>
+            <tr>
+                <th class="font-weight-bold">Department</th>
+                <th class="font-weight-bold">Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model)
+                {
+                <tr>
+                    <td>@d.Department</td>
+                    <td>@d.AvgSalary</td>
+                </tr>
+                }
+        </tbody>
+    </table>
+</div>

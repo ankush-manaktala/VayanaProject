@@ -1,0 +1,316 @@
+﻿<script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+        crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<style>
+    ul li {
+        margin-right: 2rem;
+    }
+
+        ul li > a {
+            color: black;
+        }
+
+    #addEmployee {
+        height: 35px;
+        width: 60px;
+        border: 2px solid black;
+    }
+
+    sup, p {
+        color: red;
+    }
+</style>
+
+<div class="container mt-5">
+    <ul class="nav nav-tabs row text-center" role="tablist">
+        <li>
+            <a href="#_firstTab" id="firstTab" class="show" role="tab" data-toggle="tab">Employee Details</a>
+        </li>
+        <li>
+            <a href="#_secondTab" id="secondTab" class="show" role="tab" data-toggle="tab">Department</a>
+        </li>
+        <li>
+            <a href="#_thirdTab" id="thirdTab" class="show" role="tab" data-toggle="tab">Etc</a>
+        </li>
+    </ul>
+    <div class="tab-content mt-5">
+        <div class="tab-pane" id="_firstTab">
+
+            <div class="text-right my-2"><a id="addEmployee">Add Employee</a></div>
+            <div id="dvEmployee" class="d-none">
+                <div class="row my-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label id="lblFirstName">First Name<sup>*</sup></label>
+                            <input type="text" id="firstName" />
+                            <p id="erorFirstName"></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label id="lblMiddleName">Middle Name</label>
+                            <input type="text" id="middleName" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label id="lblLastName">Last Name<sup>*</sup></label>
+                            <input type="text" id="lastName" />
+                            <p id="erorLastName"></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label id="lblSalary">Salary<sup>*</sup></label>
+                            <input type="text" id="salary" />
+                            <p id="erorSalary"></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label id="lblDept">Department<sup>*</sup></label>
+                            <Select id="department">
+                                <option value="0" selected>Select Department</option>
+                                @if (ViewBag.Departments != null)
+                                {
+                                    @foreach (var dept in (List<Department>)ViewBag.Departments)
+                                    {
+                                        <option value="@dept.DeptId">@dept.DeptName</option>
+                                    }
+                                }
+                            </Select>
+                            <p id="erorDept"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <input id="btnSave" type="button" class="mr-4" value="Save" />
+                    <input id="btnCancel" type="button" class="" value="Cancel" />
+                </div>
+            </div>
+            <div id="divEmployeeTable"></div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="_secondTab">
+        <div id="dvDepartment"></div>
+    </div>
+    <div class="tab-pane fade" id="_thirdTab">
+        <div id="dvEmployeeList"></div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    $('#secondTab').click(function (e) {
+        $('#_firstTab').hide();
+        $('#_secondTab').show();
+        $('#_thirdTab').hide();
+        $.ajax({
+            url: "/Home/AvgSalaryByDepartment",
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            //dataType: "json",
+            success: function (result) {
+                $("#dvDepartment").html(result);
+            },
+            error: function (error) {
+                alert(error);
+            },
+        });
+    });
+
+    $('#thirdTab').click(function (e) {
+        $('#_firstTab').hide();
+        $('#_secondTab').hide();
+        $('#_thirdTab').show();
+        $.ajax({
+            url: "/Home/GetEmployees?ForDept="+ true,
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            //dataType: "json",
+            success: function (result) {
+                $("#dvEmployeeList").html(result);
+            },
+            error: function (error) {
+                alert(error);
+            },
+        });
+    });
+
+    function ReloadTable() {
+        $.ajax({
+            url: "/Home/GetEmployees",
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            //dataType: "json",
+            success: function (result) {
+                $("#divEmployeeTable").html(result);
+            },
+            error: function (error) {
+                alert(error);
+            },
+        });
+    }
+
+    $('#firstTab').click(function (e) {
+        $('#_secondTab').hide();
+        $('#_firstTab').show();
+        $('#_thirdTab').hide();
+        ReloadTable();
+    });
+    $(document).ready(function () {
+        $('#firstTab').trigger('click');
+    });
+    $('#addEmployee').click(function () {
+        $('p').hide();
+        $('#dvEmployee input[type="text"]').val('');
+        $('#department').val('0');
+        $('#dvEmployee').toggleClass('d-none');
+    })
+
+    $('#btnCancel').click(function () {
+        $('#dvEmployee').toggleClass('d-none');
+    })
+
+    $('#btnSave').click(function () {
+        var hasError = false;
+        if ($.trim($('#firstName').val()) === "") {
+            $("#erorFirstName").text('First Name is required.').show();
+            hasError = true;
+        }
+        else {
+            $("#erorFirstName").hide();
+        }
+        if ($.trim($('#lastName').val()) === "") {
+            $("#erorLastName").text('Last Name is required.').show();
+            hasError = true;
+        }
+        else {
+            $("#erorLastName").hide();
+        }
+        if ($.trim($('#salary').val()) === "") {
+            $("#erorSalary").text('Salary is required.').show();
+            hasError = true;
+        }
+        else {
+            $("#erorSalary").hide();
+        }
+        if ($.trim($('#department').val()) === "0") {
+            $("#erorDept").text('Please select department.').show();
+            hasError = true;
+        }
+        else {
+            $("#erorDept").hide();
+        }
+        if (hasError == false) {
+            debugger;
+            $('#dvEmployee').toggleClass('d-none');
+            var employee = {};
+            employee.EmpId = 0;
+            employee.EmpFirstName = $('#firstName').val();
+            employee.EmpMiddleName = $('#middleName').val();
+            employee.EmpLastName = $('#lastName').val();
+            employee.EmpSalary = $('#salary').val();
+            employee.EmpDeptId = $('#department').val();
+
+            $.ajax({
+                url: "/Home/AddUpdateEmployee?EmpId=" + employee.EmpId + "&EmpFirstName=" + employee.EmpFirstName + "&EmpMiddleName=" + employee.EmpMiddleName + "&EmpLastName=" + employee.EmpLastName + "&EmpSalary=" + employee.EmpSalary + "&EmpDeptId=" + employee.EmpDeptId,
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    alert(result);
+                    ReloadTable();
+                },
+                error: function (error) {
+                    alert(error);
+                },
+            });
+        }
+    })
+
+    function UpdateEmployee(item) {
+        debugger;
+        var id = $(item).attr('data-id');
+        var rowId = "#row_" + id;
+
+        var hasError = false;
+        if ($.trim($(rowId).find('#firstName').val()) === "") {
+            $(rowId).find("#erorFirstName").text('First Name is required.').show();
+            hasError = true;
+        }
+        else {
+            $(rowId).find("#erorFirstName").hide();
+        }
+        if ($.trim($(rowId).find('#lastName').val()) === "") {
+            $(rowId).find("#erorLastName").text('Last Name is required.').show();
+            hasError = true;
+        }
+        else {
+            $(rowId).find("#erorLastName").hide();
+        }
+        if ($.trim($(rowId).find('#salary').val()) === "") {
+            $(rowId).find("#erorSalary").text('Salary is required.').show();
+            hasError = true;
+        }
+        else {
+            $(rowId).find("#erorSalary").hide();
+        }
+        if ($.trim($(rowId).find('#department').val()) === "0") {
+            $(rowId).find("#erorDept").text('Please select department.').show();
+            hasError = true;
+        }
+        else {
+            $(rowId).find("#erorDept").hide();
+        }
+
+        if (!hasError) {
+
+            var employee = {};
+            employee.EmpId = id;
+            employee.EmpFirstName = $(rowId).find('#firstName').val();
+            employee.EmpMiddleName = $(rowId).find('#middleName').val();
+            employee.EmpLastName = $(rowId).find('#lastName').val();
+            employee.EmpSalary = $(rowId).find('#salary').val();
+            employee.EmpDeptId = $(rowId).find('#department').val();
+
+            $.ajax({
+                url: "/Home/AddUpdateEmployee?EmpId=" + employee.EmpId + "&EmpFirstName=" + employee.EmpFirstName + "&EmpMiddleName=" + employee.EmpMiddleName + "&EmpLastName=" + employee.EmpLastName + "&EmpSalary=" + employee.EmpSalary + "&EmpDeptId=" + employee.EmpDeptId,
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                //dataType: "json",
+                success: function (result) {
+                    alert(result);
+                    ReloadTable();
+                },
+                error: function (error) {
+                    alert(error);
+                },
+            });
+        }
+    }
+
+   function DeleteEmployee(item) {
+        debugger;
+       var id = $(item).attr('data-id');
+        $.ajax({
+            url: "/Home/DeleteEmployee?EmpId=" + id,
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            //dataType: "json",
+            success: function (result) {
+                alert(result);
+                ReloadTable();
+            },
+            error: function (error) {
+                alert(error);
+            },
+        });
+    }
+</script>
